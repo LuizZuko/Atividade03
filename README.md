@@ -1,58 +1,13 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Este projeto foi desenvolvido com o objetivo de implementar o padrão de arquitetura Service Layer (Camada de Serviço) e a escrita de testes unitários automatizados utilizando o framework Laravel. A aplicação foi estruturada para isolar as regras de negócio do restante do sistema e garantir a integridade dos dados por meio de testes de software.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A camada de serviço foi centralizada na classe ProductService, responsável por concentrar a lógica de criação e atualização de produtos. Para demonstrar a aplicação de regras de negócio, estabeleceu-se que nenhum produto pode possuir valor inferior a R$ 10,00. O método create recebe os dados de entrada, valida a regra do preço mínimo e realiza a persistência no banco de dados. Da mesma forma, o método update recebe a instância do produto e os novos atributos, aplicando a validação da regra de negócio sobre o preço antes de efetivar a atualização. Caso o preço informado viole o requisito estabelecido, o Service lança uma exceção do tipo InvalidArgumentException, interrompendo a operação.
 
-## About Laravel
+Para validar o correto funcionamento do Service, foi criada a suíte de testes unitários ProductServiceTest utilizando a trait RefreshDatabase para garantir a limpeza do banco de dados a cada execução. A cobertura de testes contempla os cenários exigidos:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Validação na Criação: Um teste que confirma que o método create lança a exceção InvalidArgumentException ao tentar cadastrar um produto com valor abaixo de R$ 10,00, verificando com assertDatabaseMissing que o registro inválido não foi inserido no banco de dados.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Atualização com Sucesso: Um teste focado no método update que valida a alteração bem-sucedida dos campos do produto (como nome e preço) quando o novo valor cumpre a regra de negócio, confirmando a persistência com assertDatabaseHas.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Bloqueio de Atualização Inválida: Um segundo teste para o método update que garante que a tentativa de atualizar um produto com um valor inferior a R$ 10,00 resulta no disparo da exceção e que os dados originais da entidade permanecem intactos no banco de dados.
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
-```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+A execução dos testes é realizada pelo comando php artisan test --filter=ProductServiceTest. Caso o ambiente PHP local não possua o driver de banco de dados SQLite em memória habilitado (pdo_sqlite no php.ini), a suíte pode ser configurada no arquivo phpunit.xml para utilizar a conexão padrão do banco de dados configurada no arquivo de ambiente.
